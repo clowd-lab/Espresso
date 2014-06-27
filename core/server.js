@@ -43,7 +43,6 @@ var Server = exports.Server = function (options) {
   this.hostedApps = [];   /* = the applications managed by this server */
   this.files = [];  /* = the files, that should be served by  this server */
   this.appName = '';
-  this.targetQuery = [];
   this.loadJSONConfig();
 };
 
@@ -53,9 +52,6 @@ Server.prototype.loadJSONConfig = function () {
 
   if (config.proxies) {
     this.proxies = config.proxies; //adding proxies, if present.
-  }
-  if (config.targetQuery) {
-    this.targetQuery = config.targetQuery; //adding targetQuery, if present.
   }
   if (config.m_serverHostname) {
     this.hostname = config.m_serverHostname; //adding specific hostname, if present.
@@ -174,11 +170,7 @@ Server.prototype.proxyThat = function (request, response) {
             _respondErr(err.toString(), 500);
           })
         .on('http-error', function (err, resp) {
-            if(err && resp) {
-                _respondErr(err.toString(), resp.statusCode);
-            } else {
-                _respondErr('http-error', 502);
-            }
+            _respondErr(err.toString(), resp.statusCode);
           })
         .on('redirect', function (data, resp) {
             Utils.log('Redirecting to: ' + resp.headers.location);

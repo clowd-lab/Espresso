@@ -14,7 +14,6 @@ var Report = require('./report').Report;
 var Resource = require('./resource').Resource;
 var Utils = require('../lib/espresso_utils');
 var HTML = Utils.HTML;
-var normalize = require('path').normalize;
 
 /**
  * @class
@@ -77,9 +76,6 @@ var App = exports.App = function (options, server) {
   this.excludedFromCaching = [];
   this.frameworks          = [];
   this.globalState         = {};
-
-  this.imagesToPreload      = [];
-  this.preloadImages       = false;
 
   this.HEAD_IndexHtml = [];
   this.BODY_IndexHtml = [];
@@ -145,26 +141,6 @@ App.prototype.addFrameworks = function (frameworks) {
   };
 };
 
-
-/**
- * @description
- * Remove excludedFiles from the View directory
- *
- */
-App.prototype.excludeDeviceSpecificViews = function (excludedFolders, excludedFiles) {
-    var that = this;
-    var exists = that._e_.fs.existsSync((that.applicationDirectory + normalize('/app/views/')));
-    if(exists){
-        var viewDir = that._e_.fs.readdirSync(that.applicationDirectory + normalize('/app/views/'));
-        var files = '';
-        viewDir.forEach(function(directoryName, ind){
-            if(that.targetQuery.subGroup && directoryName !== that.targetQuery.subGroup){
-                excludedFolders.push(directoryName);
-            }
-        });
-    }
-}
-
 /**
  * @description
  * Load the projects related files.
@@ -176,7 +152,6 @@ App.prototype.loadTheApplication = function () {
       _theApplicationResources,
       _i18n;
 
-
   _theApplication = ['app'].map(function (module) {
     var _frameworkOptions  = {};
     _frameworkOptions.path = that.applicationDirectory + '/' + module;
@@ -185,9 +160,6 @@ App.prototype.loadTheApplication = function () {
     _frameworkOptions.excludedFolders = ['resources'].concat(that.excludedFolders);
     _frameworkOptions.excludedFiles = ['.DS_Store'].concat(that.excludedFiles);
     _frameworkOptions.app = that;
-    that.excludeDeviceSpecificViews(_frameworkOptions.excludedFolders, _frameworkOptions.excludedFiles);
-      console.log(_frameworkOptions.excludedFolders);
-//      console.log(_frameworkOptions.excludedFiles);
     if (!that.eliminate) {
       _frameworkOptions.taskChain = new TaskManager([
         "preSort",
@@ -224,8 +196,7 @@ App.prototype.loadTheApplication = function () {
     _frameworkOptions.app = that;
     _frameworkOptions.taskChain = new TaskManager([
       "contentType",
-      "manifest",
-      "preloadImages"
+      "manifest"
     ]).getTaskChain();
     return new Resource(_frameworkOptions);
   });
@@ -316,7 +287,7 @@ App.prototype.loadTheMProject = function () {
     'tmp_themes',
     'bootstrapping'
   ].filter(function (module){
-    return that._e_.fs.existsSync(_path_to_the_m_project + '/modules/' + module);
+    return require('path').existsSync(_path_to_the_m_project + '/modules/' + module);
   }).map(function (module) {
     var _frameworkOptions  = {};
     _frameworkOptions.path = _path_to_the_m_project + '/modules/' + module;
@@ -484,47 +455,6 @@ App.prototype.buildIndexHTML = function (callback, _frameworkNamesForIndexHtml, 
     }, ''));
   });
 
-    if (this.supportedLanguages.length > 0) {
-        this.supportedLanguages.forEach(function (lang) {
-            _indexHtml.push(HTML('script', {
-                type: 'application/javascript',
-                src: lang + '.js'
-            }, ''));
-        });
-    };
-
-    var addApplicationConfig = function(appConfig){
-        var applicationConfig = [];
-        if(!appConfig){return}
-        Object.keys(appConfig).forEach(function(ind){
-            applicationConfig.push('M.Application.config["' + ind + '"] = ' + JSON.stringify(appConfig[ind]) + ';');
-        });
-        return applicationConfig.join('');
-    };
-
-    _indexHtml.push(HTML('script', {
-            type: 'application/javascript'
-        }, 'var ' + this.name + ' = ' + this.name + ' || {};'
-        +  'M.Application.name = ' + JSON.stringify(this.name) + ';'
-        +  (typeof this.defaultLanguage !== 'undefined'
-        ? 'M.Application.defaultLanguage = ' + JSON.stringify(this.defaultLanguage) + ';'
-        : '')
-        +  (typeof this.application !== 'undefined'
-        ? addApplicationConfig(this.application)
-        : '')
-        +  (typeof this.targetQuery !== 'undefined'
-        ? addApplicationConfig(this.targetQuery)
-        : '')
-    ));
-
-    /*preload*/
-  if(that.preloadImages){
-      _indexHtml.push(HTML('script', {
-          type: 'application/javascript',
-          src: 'preloadImages.js'
-      }, ''));
-  }
-
   _frameworkNamesForIndexHtml.forEach(function (name) {
     var match = /^(.*\/)?([^\/]+(\.[^.\/]+))$/.exec(name);
     if (match) {
@@ -546,7 +476,26 @@ App.prototype.buildIndexHTML = function (callback, _frameworkNamesForIndexHtml, 
     };
   });
 
+  if (this.supportedLanguages.length > 0) {
+    this.supportedLanguages.forEach(function (lang) {
+      _indexHtml.push(HTML('script', {
+        type: 'application/javascript',
+        src: lang + '.js'
+      }, ''));
+    });
+  };
 
+  _indexHtml.push(HTML('script', {
+    type: 'application/javascript'
+  }, 'var ' + this.name + ' = ' + this.name + ' || {};'
+  +  'M.Application.name = ' + JSON.stringify(this.name) + ';'
+  +  (typeof this.defaultLanguage !== 'undefined'
+      ? 'M.Application.defaultLanguage = ' + JSON.stringify(this.defaultLanguage) + ';'
+      : '')
+  +  (typeof this.application !== 'undefined'
+      ? 'M.Application.config = ' + JSON.stringify(this.application) + ';'
+      : '')
+  ));
 
   _indexHtml.push(HTML('script', {
     type: 'application/javascript',
@@ -556,11 +505,9 @@ App.prototype.buildIndexHTML = function (callback, _frameworkNamesForIndexHtml, 
   _indexHtml.push(HTML('/head'));
   _indexHtml.push(HTML('body'));
 
-  var applicationStartScript = 'M.ErrorWhileLoadingApplication = false; try{ ' + this.name + '.app.main(); } catch(e){ M.ErrorWhileLoadingApplication = true; };'
-
   _indexHtml.push(HTML('script', {
     type: 'application/javascript'
-  }, applicationStartScript));
+  }, this.name + '.app.main();'));
 
   _indexHtml.push(HTML('/body'));
   _indexHtml.push(HTML('/html'));
@@ -578,7 +525,6 @@ App.prototype.buildIndexHTML = function (callback, _frameworkNamesForIndexHtml, 
     "contentType",
     "manifest"
   ]).getTaskChain();
-
   var fr = new Framework(_frameworkOptions);
 
   fr.files.push(new File({
@@ -682,38 +628,6 @@ App.prototype.buildManifest = function (callback) {
   };
 };
 
-App.prototype.buildPreloadFile = function (callback) {
-    var self = this, _cacheManifest = [];
-
-    if (!self.preloadImages) {
-        callback();
-    } else {
-        var _frameworkOptions  = {};
-        _frameworkOptions.path = this.applicationDirectory;
-        _frameworkOptions.name = 'preload';
-        _frameworkOptions.app = this;
-        _frameworkOptions.virtual = true;
-        _frameworkOptions.frDelimiter = '/';
-        _frameworkOptions.taskChain = new TaskManager([
-            "void"
-        ]).getTaskChain();
-        var fr = new Framework(_frameworkOptions);
-        fr.files.push(new File({
-            frDelimiter: fr.frDelimiter,
-            virtual: true,
-            name:'/preloadImages.js',
-            path:'/preloadImages.js',
-            contentType : 'application/javascript',
-            requestPath :'preloadImages.js',
-            framework: fr, /* the framework, this file belongs to.*/
-            content: 'M.Application.config["preloadImages"] = ' + self.preloadImages + ';\nM.Application.config["imagesToPreload"] = ' + JSON.stringify(self.imagesToPreload) + ';'
-        }));
-        this.addFrameworks([fr]);
-        callback(null,this.frameworks);
-    };
-};
-
-
 /**
  * @description
  * Function to generate the projects output folders.
@@ -760,28 +674,6 @@ App.prototype.makeOutputFolder = function (callback) {
   new _OutputDirMaker(callback).makeOutputDir(self._outP.shift());
 };
 
-App.prototype.removeUnwantedLibs = function () {
-   var self = this;
-    if (self.libraries) {
-        var libs = [];
-        if(self.targets){
-            var targets = Object.keys(self.targets);
-            var libs = [];
-            self.libraries.forEach(function (fr) {
-                if(targets.indexOf(fr.name) < 0){
-                    libs.push(fr);
-                } else {
-                    if(fr.name === self.targetQuery.group){
-                        fr.name = fr.name + '/' + self.targetQuery.subGroup;
-                        libs.push(fr);
-                    }
-                }
-            });
-        }
-        self.libraries = libs;
-    };
-};
-
 App.prototype.readTargetConfig = function (tar) {
   var that = this,
       _targetsJSON =
@@ -794,7 +686,6 @@ App.prototype.readTargetConfig = function (tar) {
       if (targets[tar.group]) {
         var _group = targets[tar.group];
         that.target.group = tar.group;
-        that.targets= targets;
         if (_group[tar.subGroup]) {
           var _subGroup = _group[tar.subGroup];
 
@@ -873,7 +764,6 @@ App.prototype.build = function (callback) {
 
   if (self.targetQuery) {
     this.readTargetConfig(self.targetQuery);
-    this.removeUnwantedLibs();
   };
 
   if (self.libraries) {
@@ -942,10 +832,6 @@ App.prototype.build = function (callback) {
         self.buildManifest(this);
       },
       function (err, frameworks) {
-          if (err) { throw err; }
-          self.buildPreloadFile(this);
-      },
-      function (err, frameworks) {
         if (err) { throw err; }
         self.reporter.printReport();
         callback();
@@ -976,7 +862,7 @@ App.prototype.saveLocal = function (callback) {
     };
 
     that.save = function () {
-        app.frameworks.forEach(function (framework) {
+      app.frameworks.forEach(function (framework) {
         framework.save(function (fr) {
           // count = -1 if a framework has been saved.
           that._frameworkCounter -= 1;
@@ -1059,9 +945,4 @@ App.prototype.log = function (level) {
     var args = Array.prototype.slice.call(arguments, 1);
     return console.log.apply(this, args);
   };
-};
-
-
-App.prototype.addToPreloader = function(path){
-    this.imagesToPreload.push(path);
 };

@@ -1,3 +1,6 @@
+[submodule "node_modules/sass"]
+	path = node_modules/sass
+	url = https://github.com/visionmedia/sass.js.git
 [submodule "node_modules/step"]
 	path = node_modules/step
 	url = https://github.com/creationix/step.git
@@ -6,10 +9,22 @@
 	url = https://github.com/4z3/node-wwwdude.git
 [submodule "frameworks/The-M-Project"]
 	path = frameworks/The-M-Project
-	url = https://github.com/clowd-lab/The-M-Project.git
+	url = https://github.com/mwaylabs/The-M-Project.git
 [submodule "node_modules/mu"]
 	path = node_modules/mu
 	url = https://github.com/raycmorgan/Mu
+[submodule "submodules/github/4z3/phonegap"]
+	path = submodules/github/4z3/phonegap
+	url = https://github.com/4z3/phonegap
+[submodule "submodules/github/phonegap/ios-sim"]
+	path = submodules/github/phonegap/ios-sim
+	url = https://github.com/phonegap/ios-sim
 [submodule "node_modules/xmldom"]
 	path = node_modules/xmldom
 	url = https://github.com/jindw/xmldom
+[submodule "submodules/git-wip-us.apache.org/repos/asf/incubator-cordova-android"]
+	path = submodules/git-wip-us.apache.org/repos/asf/incubator-cordova-android
+	url = https://git-wip-us.apache.org/repos/asf/incubator-cordova-android
+[submodule "submodules/git-wip-us.apache.org/repos/asf/incubator-cordova-ios"]
+	path = submodules/git-wip-us.apache.org/repos/asf/incubator-cordova-ios
+	url = http://git-wip-us.apache.org/repos/asf/incubator-cordova-ios

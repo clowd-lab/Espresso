@@ -4,7 +4,6 @@
     "debugLevel": 1,
     "eliminate": false,
     "minify": false,
-    "preloadImages": false,
     "proxies": [
         {
             "baseUrl": "http://your.server.com",
@@ -21,8 +20,7 @@
         "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"default\">",
         "<link rel=\"apple-touch-icon\" href=\"theme/images/Icon-72.png\" />",
         "<link rel=\"apple-touch-icon\" href=\"theme/images/Icon.png\" />",
-        "<link rel=\"apple-touch-icon\" href=\"theme/images/Icon@2x.png\" />",
-        "<link rel=\"shortcut icon\" href=\"theme/images/favicon.ico\" type=\"image/x-icon\">"
+        "<link rel=\"apple-touch-icon\" href=\"theme/images/Icon@2x.png\" />"
     ],
     "application": {
         "version": "0.0.1",

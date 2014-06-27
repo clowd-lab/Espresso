@@ -1,27 +1,3 @@
-** Version 1.4.2 - Date 15.07.2013 **
-  * Change load sequence of M.Application
-  * Add callback methode to delegate finish call
-
-** Version 1.4.1 - Date 07.05.2013 **
-  * Set package command deprecated
-  * Add favicon
-  * Add templates directory to Espresso build process
-  * Add try catch to the main function and set M.ErrorWhileLoadingApplication to false if an error occurs
-
-** Version 1.4.0 - Date 26.03.2013 **
-  * node v0.10.1 ready
-  * bugfix with subdirectories
-  * put main.js to the bottom of the *_App.js
-
-** Version 1.3.0 - Date 07.12.2012 **
-  * return 502 if remote server returns nothing
-  * add targetQuery to M.Application
-  * add some eastereggs
-  * add feature to exlude device specific Views
-  * m4a support
-  * Add core functionality to preload images
-  * Fixed issue when running on windows: The first argument was node.exe (thx to Tom Peplow)
-
 ** Version 1.2.0 - Date 02.07.2012 **
 
   * Switched from PhoneGap to Cordova (version 1.9)

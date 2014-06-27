@@ -1,7 +1,12 @@
+NOTE
+====
+
+This is the development branch of Espresso, and heavily under construction!
+
 Espresso README
 ===============
 
-Espresso: The-M-Project 1.x build tools using node.js
+Espresso: The-M-Projects build tools using node.js
 
 
 Installation
